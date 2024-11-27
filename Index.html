@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Examination Results Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            margin: auto;
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+        .nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .nav button {
+            margin: 0 10px;
+            padding: 10px 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .nav button:hover {
+            background-color: #2980b9;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+        }
+        #loginError, #resultError, #tutorError, #studentError {
+            color: red;
+            display: none;
+        }
+        .student-info {
+            margin-bottom: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .transcript-heading {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Senanga College of Nursing and Midwifery</h1>
+
+    <div class="nav">
+        <button id="studentNavBtn">Student Login</button>
+        <button id="tutorNavBtn">Tutor Login</button>
+    </div>
+
+    <div class="container" id="loginContainer" style="display: none;">
+        <h2>Student Login</h2>
+        <input type="text" id="studentId" placeholder="Student ID" required>
+        <input type="password" id="studentPassword" placeholder="Password" required>
+        <button id="loginBtn">Login</button>
+        <div id="loginError">Invalid credentials. Please try again.</div>
+    </div>
+
+    <div class="container" id="resultsContainer" style="display: none;">
+        <div class="transcript-heading">Senanga College of Nursing and Midwifery Results</div>
+        <div class="student-info" id="studentInfo"></div>
+        <h2>Your Examination Results</h2>
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Score</th>
+                    <th>Grade</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Results data will be dynamically inserted here -->
+            </tbody>
+        </table>
+        <div id="resultError">No results found. Please check back later.</div>
+        <button id="logoutBtn">Logout</button>
+    </div>
+
+    <div class="container" id="tutorLoginContainer" style="display: none;">
+        <h2>Tutor Login</h2>
+        <input type="text" id="tutorId" placeholder="Tutor ID" required>
+        <input type="password" id="tutorPassword" placeholder="Password" required>
+        <button id="tutorLoginBtn">Login</button>
+        <div id="tutorError">Invalid credentials. Please try again.</div>
+    </div>
+
+    <div class="container" id="tutorDashboard" style="display: none;">
+        <h2>Tutor Dashboard</h2>
+        <div class="nav">
+            <button id="addStudentNavBtn">Add New Student</button>
+            <button id="enterResultsNavBtn">Enter Results</button>
+            <button id="exportExcelBtn" onclick="exportToExcel()">Export to Excel</button>
+        </div>
+
+        <h3>Student List</h3>
+        <table id="studentListTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Student list will be dynamically inserted here -->
+            </tbody>
+        </table>
+
+        <h3>Submitted Results</h3>
+        <table id="submittedResultsTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Subject</th>
+                    <th>Score</th>
+                    <th>Grade</th>
+                    <th>Comments</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Submitted results data will be dynamically inserted here -->
+            </tbody>
+        </table>
+        <button id="tutorLogoutBtn">Logout</button>
+    </div>
+
+    <div class="container" id="enterStudentContainer" style="display: none;">
+        <h2>Add New Student</h2>
+        <input type="text" id="newStudentId" placeholder="Student ID" required>
+        <input type="text" id="newStudentName" placeholder="Student Name" required>
+        <input type="password" id="newStudentPassword" placeholder="Password" required>
+        <button id="addStudentBtn">Add Student</button>
+        <div id="studentError"></div>
+    </div>
+
+    <div class="container" id="enterResultsContainer" style="display: none;">
+        <h2>Enter Student Results</h2>
+        <input type="text" id="studentIndex" placeholder="Student Index Number" required>
+        <input type="text" id="studentName" placeholder="Student Name" required>
+        <input type="text" id="subject" placeholder="Subject" required>
+        <input type="number" id="score" placeholder="Score" required>
+        <input type="text" id="grade" placeholder="Grade" required>
+        <textarea id="comments" placeholder="Comments" rows="3"></textarea>
+        <button id="submitResultsBtn">Submit Results</button>
+        <div id="resultsSubmissionMessage" style="color: green;"></div>
+    </div>
+
+    <div class="footer">@imataa</div>
+
+    <script>
+        // Load saved data from localStorage
+        const savedStudents = localStorage.getItem('students');
+        const savedResults = localStorage.getItem('submittedResults');
+
+        const students = savedStudents ? JSON.parse(savedStudents) : [];
+        const submittedResults = savedResults ? JSON.parse(savedResults) : [];
+
+        function saveToLocalStorage() {
+            localStorage.setItem('students', JSON.stringify(students));
+            localStorage.setItem('submittedResults', JSON.stringify(submittedResults));
+        }
+
+        document.getElementById('studentNavBtn').addEventListener('click', function() {
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('tutorLoginContainer').style.display = 'none';
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('tutorError').style.display = 'none';
+            document.getElementById('studentError').style.display = 'none';
+        });
+
+        document.getElementById('tutorNavBtn').addEventListener('click', function() {
+            document.getElementById('tutorLoginContainer').style.display = 'block';
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('tutorError').style.display = 'none';
+            document.getElementById('studentError').style.display = 'none';
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            const studentId = document.getElementById('studentId').value;
+            const studentPassword = document.getElementById('studentPassword').value;
+
+            const student = students.find(s => s.id === studentId && s.password === studentPassword);
+            if (student) {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('resultsContainer').style.display = 'block';
+                displayResults(student.results, student.name, student.id);
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        });
+
+        document.getElementById('tutorLoginBtn').addEventListener('click', function() {
+            const tutorId = document.getElementById('tutorId').value;
+            const tutorPassword = document.getElementById('tutorPassword').value;
+
+            const tutor = [{ id: "tutor1", password: "tutorpass1" }, { id: "tutor2", password: "tutorpass2" }]
+                .find(t => t.id === tutorId && t.password === tutorPassword);
+            if (tutor) {
+                document.getElementById('tutorLoginContainer').style.display = 'none';
+                document.getElementById('tutorDashboard').style.display = 'block';
+                displayStudentList();
+                displaySubmittedResults();
+            } else {
+                document.getElementById('tutorError').style.display = 'block';
+            }
+        });
+
+        document.getElementById('addStudentNavBtn').addEventListener('click', function() {
+            document.getElementById('enterStudentContainer').style.display = 'block';
+            document.getElementById('enterResultsContainer').style.display = 'none';
+        });
+
+        document.getElementById('enterResultsNavBtn').addEventListener('click', function() {
+            document.getElementById('enterResultsContainer').style.display = 'block';
+            document.getElementById('enterStudentContainer').style.display = 'none';
+        });
+
+        document.getElementById('addStudentBtn').addEventListener('click', function() {
+            const newStudentId = document.getElementById('newStudentId').value;
+            const newStudentName = document.getElementById('newStudentName').value;
+            const newStudentPassword = document.getElementById('newStudentPassword').value;
+
+            const existingStudent = students.find(s => s.id === newStudentId);
+            if (existingStudent) {
+                document.getElementById('studentError').innerText = "Student ID already exists.";
+                document.getElementById('studentError').style.display = 'block';
+                return;
+            }
+
+            students.push({ id: newStudentId, name: newStudentName, password: newStudentPassword, results: [] });
+            saveToLocalStorage();
+            document.getElementById('studentError').innerText = "Student added successfully!";
+            document.getElementById('studentError').style.display = 'block';
+            document.getElementById('newStudentId').value = '';
+            document.getElementById('newStudentName').value = '';
+            document.getElementById('newStudentPassword').value = '';
+            displayStudentList();
+        });
+
+        document.getElementById('submitResultsBtn').addEventListener('click', function() {
+            const index = document.getElementById('studentIndex').value;
+            const studentName = document.getElementById('studentName').value;
+            const subject = document.getElementById('subject').value;
+            const score = parseInt(document.getElementById('score').value);
+            const grade = document.getElementById('grade').value;
+            const comments = document.getElementById('comments').value;
+
+            const student = students.find(s => s.id === index);
+            if (student) {
+                const result = { subject, score, grade, comments, studentName };
+                student.results.push(result);
+                submittedResults.push({ studentId: index, studentName, ...result });
+                saveToLocalStorage();
+                document.getElementById('resultsSubmissionMessage').innerText = "Results submitted successfully!";
+                displaySubmittedResults();
+                clearInputFields();
+            } else {
+                document.getElementById('resultsSubmissionMessage').innerText = "Student not found. Please check the index number.";
+            }
+        });
+
+        function displayResults(results, studentName, studentId) {
+            const resultsTableBody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+            resultsTableBody.innerHTML = '';
+            document.getElementById('studentInfo').innerText = `Name: ${studentName} | Index No: ${studentId}`;
+
+            if (results.length === 0) {
+                document.getElementById('resultError').style.display = 'block';
+                return;
+            }
+
+            results.forEach(result => {
+                const newRow = resultsTableBody.insertRow();
+                newRow.innerHTML = `
+                    <td>${result.subject}</td>
+                    <td>${result.score}</td>
+                    <td>${result.grade}</td>
+                    <td>${result.comments}</td>
+                `;
+            });
+            document.getElementById('resultError').style.display = 'none';
+        }
+
+        function displayStudentList() {
+            const studentListTableBody = document.getElementById('studentListTable').getElementsByTagName('tbody')[0];
+            studentListTableBody.innerHTML = '';
+
+            students.forEach(student => {
+                const newRow = studentListTableBody.insertRow();
+                newRow.innerHTML = `
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>
+                        <button class="deleteBtn" onclick="deleteStudent('${student.id}')">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        function displaySubmittedResults() {
+            const submittedResultsTableBody = document.getElementById('submittedResultsTable').getElementsByTagName('tbody')[0];
+            submittedResultsTableBody.innerHTML = '';
+
+            submittedResults.forEach((result, index) => {
+                const newRow = submittedResultsTableBody.insertRow();
+                newRow.innerHTML = `
+                    <td>${result.studentId}</td>
+                    <td>${result.studentName}</td>
+                    <td>${result.subject}</td>
+                    <td>${result.score}</td>
+                    <td>${result.grade}</td>
+                    <td>${result.comments}</td>
+                    <td>
+                        <button class="editBtn" onclick="editSubmittedResult(${index})">Edit</button>
+                        <button class="deleteBtn" onclick="deleteSubmittedResult(${index})">Delete</button>
+                    </td>
+                `;
+            });
+        }
+
+        function deleteStudent(studentId) {
+            const studentIndex = students.findIndex(s => s.id === studentId);
+            if (studentIndex !== -1) {
+                students.splice(studentIndex, 1);
+                saveToLocalStorage();
+                displayStudentList();
+                displaySubmittedResults();
+            }
+        }
+
+        function clearInputFields() {
+            document.getElementById('studentIndex').value = '';
+            document.getElementById('studentName').value = '';
+            document.getElementById('subject').value = '';
+            document.getElementById('score').value = '';
+            document.getElementById('grade').value = '';
+            document.getElementById('comments').value = '';
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            document.getElementById('resultsContainer').style.display = 'none';
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('loginError').style.display = 'none';
+            document.getElementById('studentId').value = '';
+            document.getElementById('studentPassword').value = '';
+        });
+
+        document.getElementById('tutorLogoutBtn').addEventListener('click', function() {
+            document.getElementById('tutorDashboard').style.display = 'none';
+            document.getElementById('enterStudentContainer').style.display = 'none';
+            document.getElementById('enterResultsContainer').style.display = 'none';
+            document.getElementById('tutorLoginContainer').style.display = 'block';
+            document.getElementById('tutorError').style.display = 'none';
+            document.getElementById('tutorId').value = '';
+            document.getElementById('tutorPassword').value = '';
+        });
+
+        function exportToExcel() {
+            const table = document.getElementById('submittedResultsTable');
+            let rows = [];
+            for (let i = 0; i < table.rows.length; i++) {
+                let row = [];
+                for (let j = 0; j < table.rows[i].cells.length; j++) {
+                    row.push(table.rows[i].cells[j].innerText);
+                }
+                rows.push(row.join(","));
+            }
+            const csvContent = 'data:text/csv;charset=utf-8,' + rows.join("\n");
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "submitted_results.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
